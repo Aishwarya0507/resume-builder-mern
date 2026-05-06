@@ -1,0 +1,38 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: resume-builder-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # User will provide this in Render Dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false # User will provide this if needed
+      - key: FRONTEND_URL
+        fromService:
+          name: resume-builder-frontend
+          type: static_site
+          property: url
+
+  # Frontend Static Site
+  - type: static_site
+    name: resume-builder-frontend
+    runtime: node
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: resume-builder-api
+          type: web
+          property: url
